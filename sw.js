@@ -3,7 +3,7 @@
 // Cambiar APP_VERSION para forzar actualizaci�n en los clientes
 // ============================================================
 const APP_VERSION = 'ag-v2.1.9'; // ? CAMBIAR PARA FORZAR UPDATE
-const BASE_PATH = '/MARLEW';
+const BASE_PATH = '/app';
 
 const STATIC_ASSETS = [
   `${BASE_PATH}/`,
