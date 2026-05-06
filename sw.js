@@ -1,8 +1,8 @@
 // ============================================================
-// AG Vending — Service Worker
-// Cambiar APP_VERSION para forzar actualización en los clientes
+// AG Vending ï¿½ Service Worker
+// Cambiar APP_VERSION para forzar actualizaciï¿½n en los clientes
 // ============================================================
-const APP_VERSION = 'ag-v1.0'; // ? CAMBIAR PARA FORZAR UPDATE
+const APP_VERSION = 'ag-v2.1.5'; // ? CAMBIAR PARA FORZAR UPDATE
 const BASE_PATH = '/MARLEW';
 
 const STATIC_ASSETS = [
@@ -14,9 +14,9 @@ const STATIC_ASSETS = [
 ];
 
 // -- INSTALL --------------------------------------------------
-// ?? NO llamar self.skipWaiting() aquí.
-// Si lo hacés, el SW nuevo se activa solo y el banner
-// de "Nueva versión disponible" NUNCA aparece en el cliente.
+// ?? NO llamar self.skipWaiting() aquï¿½.
+// Si lo hacï¿½s, el SW nuevo se activa solo y el banner
+// de "Nueva versiï¿½n disponible" NUNCA aparece en el cliente.
 // El skipWaiting se dispara solo cuando el usuario toca ACTUALIZAR.
 self.addEventListener('install', (event) => {
   console.log('[SW] Instalando:', APP_VERSION);
@@ -32,12 +32,12 @@ self.addEventListener('install', (event) => {
       }
     })
   );
-  // ? NO poner self.skipWaiting() acá
+  // ? NO poner self.skipWaiting() acï¿½
 });
 
 // -- ACTIVATE -------------------------------------------------
-// Se activa después de que el usuario confirma la actualización
-// (vía postMessage SKIP_WAITING ? skipWaiting() ? controllerchange ? reload)
+// Se activa despuï¿½s de que el usuario confirma la actualizaciï¿½n
+// (vï¿½a postMessage SKIP_WAITING ? skipWaiting() ? controllerchange ? reload)
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activando:', APP_VERSION);
   event.waitUntil(
@@ -57,9 +57,9 @@ self.addEventListener('activate', (event) => {
 });
 
 // -- FETCH ----------------------------------------------------
-// Estrategia: Network-first con fallback a caché.
+// Estrategia: Network-first con fallback a cachï¿½.
 // Siempre intenta la red primero para tener datos frescos,
-// y usa la caché solo si no hay conexión.
+// y usa la cachï¿½ solo si no hay conexiï¿½n.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
@@ -73,7 +73,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(req)
       .then((networkRes) => {
-        // Respuesta válida ? actualizar caché y devolver
+        // Respuesta vï¿½lida ? actualizar cachï¿½ y devolver
         if (networkRes && networkRes.status === 200) {
           const clone = networkRes.clone();
           caches.open(APP_VERSION).then((cache) => {
@@ -83,14 +83,14 @@ self.addEventListener('fetch', (event) => {
         return networkRes;
       })
       .catch(() => {
-        // Sin red ? intentar desde caché
+        // Sin red ? intentar desde cachï¿½
         return caches.match(req).then((cacheRes) => {
           if (cacheRes) {
-            console.log('[SW] Sirviendo desde caché (offline):', req.url);
+            console.log('[SW] Sirviendo desde cachï¿½ (offline):', req.url);
             return cacheRes;
           }
-          // Sin caché tampoco ? devolver respuesta de error básica
-          return new Response('Sin conexión', {
+          // Sin cachï¿½ tampoco ? devolver respuesta de error bï¿½sica
+          return new Response('Sin conexiï¿½n', {
             status: 503,
             statusText: 'Service Unavailable'
           });
@@ -101,11 +101,11 @@ self.addEventListener('fetch', (event) => {
 
 // -- MENSAJES -------------------------------------------------
 // El index.html manda { type: 'SKIP_WAITING' } cuando el usuario
-// toca el botón ACTUALIZAR en el banner.
-// Recién ahí activamos el nuevo SW.
+// toca el botï¿½n ACTUALIZAR en el banner.
+// Reciï¿½n ahï¿½ activamos el nuevo SW.
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
-    console.log('[SW] SKIP_WAITING recibido — activando nueva versión...');
+    console.log('[SW] SKIP_WAITING recibido ï¿½ activando nueva versiï¿½n...');
     self.skipWaiting();
   }
 });
