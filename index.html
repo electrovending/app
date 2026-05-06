@@ -7,9 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#10b981">
-  <link rel="icon" href="/MARLEW/icon-192.png">
+  <link rel="icon" href="/app/icon-192.png">
   <title>AG Vending Wallet</title>
-  <link rel="manifest" href="/MARLEW/manifest.json">
+  <link rel="manifest" href="/app/manifest.json">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1023,20 +1023,16 @@
       ui.loading(false);
 
       if (!state.espOnline) {
-        // ── CAMBIO v1.9.1 ──
-        // Safari iOS no tiene Web Bluetooth → mostrar banner para abrir con Bluefy
+        // Safari iOS sin Web Bluetooth → mostrar banner Bluefy
         if (isSafariiOS) {
           showBluefyBanner(true);
           ui.notify('Maquina offline. Abre con Bluefy para pagar por Bluetooth.');
         } else if (!hasWebBluetooth()) {
-          // Android u otro browser sin BLE
           ui.notify('Maquina offline. Usa Chrome o Edge para pagar por Bluetooth.');
         } else {
-          // Ya tiene BLE (Bluefy u otro)
           ui.notify('Modo Bluetooth activado');
         }
       } else {
-        // Máquina online → ocultar banner si estaba visible
         showBluefyBanner(false);
       }
     }
@@ -1129,8 +1125,6 @@
 
     async connect(espId) {
       if (!hasWebBluetooth()) {
-        // ── CAMBIO v1.9.1 ──
-        // En Safari iOS: mostrar banner para abrir en Bluefy con la URL actual
         if (isSafariiOS) {
           showBluefyBanner(true);
           ui.notify('Toca el banner azul para abrir con Bluefy y usar Bluetooth');
@@ -1361,8 +1355,6 @@
 
       if (!state.espOnline) {
         if (!hasWebBluetooth()) {
-          // ── CAMBIO v1.9.1 ──
-          // Safari iOS: mostrar banner Bluefy con la URL de la compra en curso
           if (isSafariiOS) {
             showBluefyBanner(true);
             ui.notify('Toca el banner azul para abrir Bluefy y pagar por Bluetooth');
@@ -1575,9 +1567,7 @@
   });
   </script>
 
-  <!-- ============================================================
-    BANNER DE ACTUALIZACIÓN — aparece cuando el SW detecta versión nueva
-  ============================================================ -->
+  <!-- BANNER DE ACTUALIZACIÓN -->
   <div id="sw-update-banner" style="
     display:none; position:fixed; top:0; left:0; right:0; z-index:99998;
     background:linear-gradient(135deg,#059669,#047857);
@@ -1601,15 +1591,7 @@
     }
   </style>
 
-  <!-- ============================================================
-    REGISTRO DEL SERVICE WORKER
-    Flujo:
-      1. SW nuevo se instala → queda en "waiting"
-      2. Se dispara 'updatefound' → SW muestra banner
-      3. Usuario toca ACTUALIZAR → postMessage SKIP_WAITING
-      4. SW llama skipWaiting() → se activa y borra cache viejo
-      5. 'controllerchange' → recarga limpia de la página
-  ============================================================ -->
+  <!-- REGISTRO DEL SERVICE WORKER -->
   <script>
   (function() {
     if (!('serviceWorker' in navigator)) return;
@@ -1623,7 +1605,6 @@
       document.getElementById('sw-update-btn').onclick = function() {
         this.textContent = 'Actualizando...';
         this.disabled = true;
-        // Le decimos al SW en waiting que tome el control
         if (newWorker) {
           newWorker.postMessage({ type: 'SKIP_WAITING' });
         } else if (navigator.serviceWorker.controller) {
@@ -1632,43 +1613,30 @@
       };
     }
 
-    // Cuando el SW activo cambia (skipWaiting corrió) → recargar
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       console.log('[SW Client] controllerchange → recargando...');
       window.location.reload();
     });
 
-    navigator.serviceWorker.register('/MARLEW/sw.js', { scope: '/MARLEW/' })
+    navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' })
       .then(reg => {
-        console.log('[SW Client] Registrado. Estado:', reg.active ? 'activo' : 'instalando');
-
-        // Caso A: ya hay un SW esperando desde antes (p.ej. el usuario volvió a abrir la app)
+        console.log('[SW Client] Registrado en /app/sw.js. Estado:', reg.active ? 'activo' : 'instalando');
         if (reg.waiting) {
-          console.log('[SW Client] Ya había un SW en waiting → mostrando banner');
+          console.log('[SW Client] SW en waiting → mostrando banner');
           newWorker = reg.waiting;
           showUpdateBanner();
         }
-
-        // Caso B: SW nuevo encontrado mientras la app está abierta
         reg.addEventListener('updatefound', () => {
           const installing = reg.installing;
-          console.log('[SW Client] updatefound — nuevo SW instalando...');
           installing.addEventListener('statechange', () => {
-            console.log('[SW Client] SW state:', installing.state);
             if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-              // Hay un SW viejo activo y uno nuevo listo → mostrar banner
-              console.log('[SW Client] Nuevo SW listo → mostrando banner');
               newWorker = installing;
               showUpdateBanner();
             }
           });
         });
-
-        // Verificar actualizaciones cada vez que la app vuelve al frente
         document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'visible') {
-            reg.update().catch(() => {});
-          }
+          if (document.visibilityState === 'visible') reg.update().catch(()=>{});
         });
       })
       .catch(err => console.warn('[SW Client] Error al registrar SW:', err));
