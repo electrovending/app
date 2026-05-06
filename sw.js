@@ -2,7 +2,7 @@
 // AG Vending � Service Worker
 // Cambiar APP_VERSION para forzar actualizaci�n en los clientes
 // ============================================================
-const APP_VERSION = 'ag-v2.1.5'; // ? CAMBIAR PARA FORZAR UPDATE
+const APP_VERSION = 'ag-v2.1.9'; // ? CAMBIAR PARA FORZAR UPDATE
 const BASE_PATH = '/MARLEW';
 
 const STATIC_ASSETS = [
